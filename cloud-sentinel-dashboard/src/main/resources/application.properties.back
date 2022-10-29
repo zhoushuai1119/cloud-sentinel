@@ -1,0 +1,52 @@
+server.port=9999
+
+spring.application.name=cloud-sentinel-dashboard
+
+#spring settings
+server.servlet.encoding.charset=UTF-8
+server.servlet.encoding.force=true
+server.servlet.encoding.enabled=true
+
+#cookie name setting
+server.servlet.session.cookie.name=sentinel_dashboard_cookie
+
+#logging settings
+logging.level.org.springframework.web=INFO
+logging.file.name=${user.home}/logs/csp/sentinel-dashboard.log
+logging.pattern.file= %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+#logging.pattern.console= %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+
+#auth settings
+auth.filter.exclude-urls=/,/auth/login,/auth/logout,/registry/machine,/version
+auth.filter.exclude-url-suffixes=htm,html,js,css,map,ico,ttf,woff,png
+# If auth.enabled=false, Sentinel console disable login
+auth.username=sentinel
+auth.password=123456
+
+# Inject the dashboard version. It's required to enable
+# filtering in pom.xml for this resource file.
+sentinel.dashboard.version=1.8.1
+
+spring.profiles.active=dev
+
+# apollo config
+app.id=sentinel-dashboard
+apollo.meta=http://139.196.208.53:8070
+apollo.token=e51497c4198c86de5f36b9e0e93b1ce488d79e31
+apollo.user=zhoushuai
+apollo.clusterName=default
+apollo.namespaceName=development.sentinel-rules
+apollo.gateway.namespaceName=development.gateway-rules
+
+# mysql
+spring.datasource.type= com.alibaba.druid.pool.DruidDataSource
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://139.196.208.53:3306/sentinel-dashboard?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false&testWhileIdle=false
+spring.datasource.username=root
+spring.datasource.password=Zs11195310
+
+# mybatis plus
+mybatis-plus.global-config.banner=false
+mybatis-plus.mapper-locations=classpath*:mapping/*.xml
+mybatis-plus.configuration.map-underscore-to-camel-case=true
+#mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl

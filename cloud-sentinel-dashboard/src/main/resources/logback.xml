@@ -1,0 +1,107 @@
+<!-- 属性描述
+scan：性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true
+scanPeriod:设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位，默认单位是毫秒。当scan为true时，此属性生效。默认的时间间隔为1分钟。
+debug:当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。 -->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!-- 模块名称， 影响日志配置名，日志文件名 -->
+    <property name="log.module.name" value="cloud-sentinel-dashboard"/>
+    <!-- 定义日志文件存储根路径 -->
+    <property name="log.path" value="${user.home}/logs/cloud-sentinel" />
+    <!-- 定义存储日志文件路径 -->
+    <property name="log.file" value="${log.path}/${log.module.name}/${log.module.name}.log"/>
+    <!-- 定义历史日志文件路径 -->
+    <property name="history.log.file" value="${log.path}/${log.module.name}/%d{yyyy-MM-dd}/${log.module.name}-%i.log.zip"/>
+    <!-- 定义错误日志文件路径 -->
+    <property name="error.log.file" value="${log.path}/${log.module.name}/error/${log.module.name}_error.log"/>
+    <!-- 定义错误历史日志文件路径 -->
+    <property name="history.error.log.file" value="${log.path}/${log.module.name}/%d{yyyy-MM-dd}/error/${log.module.name}_error-%i.log.zip"/>
+    <!-- 日志最大的历史 30天 -->
+    <property name="log.max.history" value="30"/>
+    <!-- 日志文件大小,超过这个大小将被压缩 -->
+    <property name="log.max.size" value="100MB"/>
+    <!-- 日志输出格式 -->
+    <property name="log.pattern"
+              value="%d{yyyy-MM-dd HH:mm:ss} 【%tid】 | [%thread] | %-5level | %logger{50}.%method:%L - %msg %n"/>
+
+    <!--控制台输出 -->
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <Pattern>${log.pattern}</Pattern>
+            </layout>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 用来保存输出所有级别的日志 -->
+    <appender name="file.all" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 设置日志不超过${log.max.size}时的保存路径 -->
+        <File>${log.file}</File>
+        <!-- 滚动记录文件，先将日志记录到指定文件，当符合某个条件时，将日志记录到其他文件。 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${history.log.file}</FileNamePattern>
+            <!-- 文件输出日志 (文件大小策略进行文件输出，超过指定大小对文件备份) -->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${log.max.size}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!--只保留最近30天的日志-->
+            <maxHistory>${log.max.history}</maxHistory>
+        </rollingPolicy>
+        <!-- 日志输出的文件的格式 -->
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <Pattern>${log.pattern}</Pattern>
+            </layout>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 只用保存输出error级别的日志 -->
+    <appender name="file.error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${error.log.file}</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${history.error.log.file}</FileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${log.max.size}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!--只保留最近30天的日志-->
+            <maxHistory>${log.max.history}</maxHistory>
+        </rollingPolicy>
+        <!-- 下面为配置只输出error级别的日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!--过滤 Error-->
+            <level>ERROR</level>
+            <!--匹配到就允许-->
+            <onMatch>ACCEPT</onMatch>
+            <!--没有匹配到就禁止-->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 日志输出的文件的格式 -->
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <Pattern>${log.pattern}</Pattern>
+            </layout>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- skywalking grpc 日志收集 8.4.0版本开始支持 -->
+    <appender name="grpc-log" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+                <Pattern>${log.pattern}</Pattern>
+            </layout>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 根节点，表名基本的日志级别，里面可以由多个appender规则 -->
+    <!-- level="INFO"代表基础日志级别为INFO -->
+    <root level="INFO">
+        <appender-ref ref="stdout" />
+        <appender-ref ref="file.all" />
+        <appender-ref ref="file.error" />
+        <appender-ref ref="grpc-log" />
+    </root>
+
+</configuration>
