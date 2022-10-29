@@ -15,17 +15,16 @@
  */
 package com.cloud.sentinel.dashboard.rule.apollo.gateway.api;
 
-import com.cloud.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
-import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.cloud.sentinel.dashboard.rule.apollo.ApolloConfigUtil;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.fastjson.JSON;
+import com.cloud.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
+import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
+import com.cloud.sentinel.dashboard.rule.apollo.ApolloConfigUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -37,9 +36,8 @@ import java.util.List;
  * @since 1.5.0
  */
 @Component("gatewayApiRuleApolloPublisher")
+@Slf4j
 public class GatewayApiRuleApolloPublisher implements DynamicRulePublisher<List<ApiDefinitionEntity>> {
-
-    private final Logger logger = LoggerFactory.getLogger(GatewayApiRuleApolloPublisher.class);
 
     @Autowired
     private ApolloOpenApiClient apolloOpenApiClient;
@@ -80,7 +78,7 @@ public class GatewayApiRuleApolloPublisher implements DynamicRulePublisher<List<
         namespaceReleaseDTO.setReleaseTitle("Modify or add configurations");
         apolloOpenApiClient.publishNamespace(appId, env, clusterName, gatewayNamespaceName, namespaceReleaseDTO);
 
-        logger.info("set app : {} ApiDefinitionRule success rules: {}", app, JSON.toJSONString(rules));
+        log.info("set app : {} ApiDefinitionRule success rules: {}", app, JSON.toJSONString(rules));
     }
 
     /**

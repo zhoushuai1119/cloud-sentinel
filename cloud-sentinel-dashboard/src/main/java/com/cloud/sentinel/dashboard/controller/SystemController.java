@@ -15,15 +15,14 @@
  */
 package com.cloud.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.cloud.sentinel.dashboard.auth.AuthAction;
 import com.cloud.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.cloud.sentinel.dashboard.client.SentinelApiClient;
 import com.cloud.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
 import com.cloud.sentinel.dashboard.domain.Result;
 import com.cloud.sentinel.dashboard.repository.rule.RuleRepository;
 import com.cloud.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,29 +44,18 @@ public class SystemController {
     @Autowired
     private RuleRepository<SystemRuleEntity, Long> repository;
     @Autowired
-    private SentinelApiClient sentinelApiClient;
-
-    @Autowired
     @Qualifier("systemRuleApolloProvider")
     private DynamicRuleProvider<List<SystemRuleEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("systemRuleApolloPublisher")
     private DynamicRulePublisher<List<SystemRuleEntity>> rulePublisher;
 
-    private <R> Result<R> checkBasicParams(String app) {
-        if (StringUtil.isEmpty(app)) {
-            return Result.ofFail(-1, "app can't be null or empty");
-        }
-        return null;
-    }
 
     @GetMapping("/rules.json")
     @AuthAction(PrivilegeType.READ_RULE)
     public Result<List<SystemRuleEntity>> apiQueryMachineRules(String app) {
-        Result<List<SystemRuleEntity>> checkResult = checkBasicParams(app);
-        if (checkResult != null) {
-            return checkResult;
+        if (StringUtil.isEmpty(app)) {
+            return Result.ofFail(-1, "app can't be null or empty");
         }
         try {
             List<SystemRuleEntity> rules = ruleProvider.getRules(app);
@@ -95,9 +83,8 @@ public class SystemController {
     public Result<SystemRuleEntity> apiAdd(String app, Double highestSystemLoad, Double highestCpuUsage,
                                            Long avgRt, Long maxThread, Double qps) {
 
-        Result<SystemRuleEntity> checkResult = checkBasicParams(app);
-        if (checkResult != null) {
-            return checkResult;
+        if (StringUtil.isEmpty(app)) {
+            return Result.ofFail(-1, "app can't be null or empty");
         }
 
         int notNullCount = countNotNullAndNotNegative(highestSystemLoad, avgRt, maxThread, qps, highestCpuUsage);

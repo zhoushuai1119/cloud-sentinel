@@ -16,9 +16,9 @@
 package com.cloud.sentinel.dashboard.controller.gateway;
 
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.cloud.sentinel.dashboard.auth.AuthAction;
 import com.cloud.sentinel.dashboard.auth.AuthService;
-import com.cloud.sentinel.dashboard.client.SentinelApiClient;
 import com.cloud.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.cloud.sentinel.dashboard.datasource.entity.gateway.GatewayParamFlowItemEntity;
 import com.cloud.sentinel.dashboard.domain.Result;
@@ -28,7 +28,6 @@ import com.cloud.sentinel.dashboard.domain.vo.gateway.rule.UpdateFlowRuleReqVo;
 import com.cloud.sentinel.dashboard.repository.gateway.InMemGatewayFlowRuleStore;
 import com.cloud.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,14 +53,9 @@ public class GatewayFlowRuleController {
 
     @Autowired
     private InMemGatewayFlowRuleStore repository;
-
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
-
     @Autowired
     @Qualifier("gatewayFlowRuleApolloProvider")
     private DynamicRuleProvider<List<GatewayFlowRuleEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("gatewayFlowRuleApolloPublisher")
     private DynamicRulePublisher<List<GatewayFlowRuleEntity>> rulePublisher;
@@ -78,11 +72,9 @@ public class GatewayFlowRuleController {
     @GetMapping("/list.json")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
     public Result<List<GatewayFlowRuleEntity>> queryFlowRules(String app) {
-
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
-
         try {
             List<GatewayFlowRuleEntity> rules = ruleProvider.getRules(app);
             repository.saveAll(rules);

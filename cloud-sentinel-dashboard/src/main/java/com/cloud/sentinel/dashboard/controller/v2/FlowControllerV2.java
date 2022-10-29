@@ -45,11 +45,9 @@ public class FlowControllerV2 {
 
     @Autowired
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
-
     @Autowired
     @Qualifier("flowRuleApolloProvider")
     private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("flowRuleApolloPublisher")
     private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;

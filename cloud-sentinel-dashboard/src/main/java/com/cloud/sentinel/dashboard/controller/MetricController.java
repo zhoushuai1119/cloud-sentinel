@@ -1,13 +1,12 @@
 package com.cloud.sentinel.dashboard.controller;
 
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.cloud.sentinel.dashboard.datasource.entity.MetricEntity;
 import com.cloud.sentinel.dashboard.domain.Result;
 import com.cloud.sentinel.dashboard.domain.vo.MetricVo;
 import com.cloud.sentinel.dashboard.repository.metric.MetricsRepository;
-import com.alibaba.csp.sentinel.util.StringUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,9 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Controller
 @RequestMapping(value = "/metric", produces = MediaType.APPLICATION_JSON_VALUE)
+@Slf4j
 public class MetricController {
-
-    private static final Logger log = LoggerFactory.getLogger(MetricController.class);
 
     private static final long maxQueryIntervalMs = 1000 * 60 * 60;
 

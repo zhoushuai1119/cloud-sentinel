@@ -15,17 +15,16 @@
  */
 package com.cloud.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreakerStrategy;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.cloud.sentinel.dashboard.auth.AuthAction;
 import com.cloud.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.cloud.sentinel.dashboard.client.SentinelApiClient;
 import com.cloud.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.cloud.sentinel.dashboard.domain.Result;
 import com.cloud.sentinel.dashboard.repository.rule.RuleRepository;
 import com.cloud.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreakerStrategy;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -48,11 +47,8 @@ public class DegradeController {
     @Autowired
     private RuleRepository<DegradeRuleEntity, Long> repository;
     @Autowired
-    private SentinelApiClient sentinelApiClient;
-    @Autowired
     @Qualifier("degradeRuleApolloProvider")
     private DynamicRuleProvider<List<DegradeRuleEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("degradeRuleApolloPublisher")
     private DynamicRulePublisher<List<DegradeRuleEntity>> rulePublisher;
@@ -60,15 +56,9 @@ public class DegradeController {
 
     @GetMapping("/rules.json")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<DegradeRuleEntity>> apiQueryMachineRules(String app, String ip, Integer port) {
+    public Result<List<DegradeRuleEntity>> apiQueryMachineRules(String app) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
-        }
-        if (StringUtil.isEmpty(ip)) {
-            return Result.ofFail(-1, "ip can't be null or empty");
-        }
-        if (port == null) {
-            return Result.ofFail(-1, "port can't be null");
         }
         try {
             List<DegradeRuleEntity> rules = ruleProvider.getRules(app);

@@ -19,9 +19,8 @@ import com.cloud.sentinel.dashboard.auth.AuthService;
 import com.cloud.sentinel.dashboard.auth.SimpleWebAuthServiceImpl;
 import com.cloud.sentinel.dashboard.config.DashboardConfig;
 import com.cloud.sentinel.dashboard.domain.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,9 +35,8 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
     @Value("${auth.username:sentinel}")
     private String authUsername;
@@ -66,7 +64,7 @@ public class AuthController {
          */
         if (StringUtils.isNotBlank(authUsername) && !authUsername.equals(username)
                 || StringUtils.isNotBlank(authPassword) && !authPassword.equals(password)) {
-            LOGGER.error("Login failed: Invalid username or password, username=" + username);
+            log.error("Login failed: Invalid username or password, username= {}", username);
             return Result.ofFail(-1, "Invalid username or password");
         }
 

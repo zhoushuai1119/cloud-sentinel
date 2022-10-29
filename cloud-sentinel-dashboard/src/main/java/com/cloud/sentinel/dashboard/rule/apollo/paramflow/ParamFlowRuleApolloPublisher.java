@@ -1,17 +1,16 @@
 package com.cloud.sentinel.dashboard.rule.apollo.paramflow;
 
+import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.util.AssertUtil;
+import com.alibaba.fastjson.JSON;
 import com.cloud.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.cloud.sentinel.dashboard.datasource.entity.rule.correct.ParamFlowRuleCorrectEntity;
 import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.cloud.sentinel.dashboard.rule.apollo.ApolloConfigUtil;
-import com.alibaba.csp.sentinel.datasource.Converter;
-import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,9 +26,8 @@ import java.util.stream.Collectors;
  * @create: 2020-07-22 10:47
  **/
 @Component("paramFlowRuleApolloPublisher")
+@Slf4j
 public class ParamFlowRuleApolloPublisher implements DynamicRulePublisher<List<ParamFlowRuleEntity>> {
-
-    private final Logger logger = LoggerFactory.getLogger(ParamFlowRuleApolloPublisher.class);
 
     @Autowired
     private ApolloOpenApiClient apolloOpenApiClient;
@@ -80,7 +78,7 @@ public class ParamFlowRuleApolloPublisher implements DynamicRulePublisher<List<P
         namespaceReleaseDTO.setReleaseTitle("Modify or add configurations");
         apolloOpenApiClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
 
-        logger.info("set app : {} ParamFlow success rules: {}", app, JSON.toJSONString(rules));
+        log.info("set app : {} ParamFlow success rules: {}", app, JSON.toJSONString(rules));
     }
 
     /**

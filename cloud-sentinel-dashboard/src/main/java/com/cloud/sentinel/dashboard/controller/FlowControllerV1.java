@@ -15,15 +15,14 @@
  */
 package com.cloud.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.cloud.sentinel.dashboard.auth.AuthAction;
 import com.cloud.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.cloud.sentinel.dashboard.client.SentinelApiClient;
 import com.cloud.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.cloud.sentinel.dashboard.domain.Result;
 import com.cloud.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
 import com.cloud.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,14 +44,9 @@ public class FlowControllerV1 {
 
     @Autowired
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
-
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
-
     @Autowired
     @Qualifier("flowRuleApolloProvider")
     private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("flowRuleApolloPublisher")
     private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;

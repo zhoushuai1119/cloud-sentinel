@@ -15,16 +15,15 @@
  */
 package com.cloud.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.cloud.sentinel.dashboard.auth.AuthAction;
 import com.cloud.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.cloud.sentinel.dashboard.client.SentinelApiClient;
 import com.cloud.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.cloud.sentinel.dashboard.domain.Result;
 import com.cloud.sentinel.dashboard.repository.rule.RuleRepository;
 import com.cloud.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,31 +42,19 @@ import java.util.List;
 public class AuthorityRuleController {
 
     @Autowired
-    private SentinelApiClient sentinelApiClient;
-    @Autowired
     private RuleRepository<AuthorityRuleEntity, Long> repository;
-
     @Autowired
     @Qualifier("authorityRuleApolloProvider")
     private DynamicRuleProvider<List<AuthorityRuleEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("authorityRuleApolloPublisher")
     private DynamicRulePublisher<List<AuthorityRuleEntity>> rulePublisher;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<AuthorityRuleEntity>> apiQueryAllRulesForMachine(@RequestParam String app,
-                                                                        @RequestParam String ip,
-                                                                        @RequestParam Integer port) {
+    public Result<List<AuthorityRuleEntity>> apiQueryAllRulesForMachine(@RequestParam String app) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app cannot be null or empty");
-        }
-        if (StringUtil.isEmpty(ip)) {
-            return Result.ofFail(-1, "ip cannot be null or empty");
-        }
-        if (port == null || port <= 0) {
-            return Result.ofFail(-1, "Invalid parameter: port");
         }
         try {
             List<AuthorityRuleEntity> rules = ruleProvider.getRules(app);

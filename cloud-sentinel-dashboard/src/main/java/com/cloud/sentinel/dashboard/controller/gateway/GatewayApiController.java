@@ -15,9 +15,9 @@
  */
 package com.cloud.sentinel.dashboard.controller.gateway;
 
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.cloud.sentinel.dashboard.auth.AuthAction;
 import com.cloud.sentinel.dashboard.auth.AuthService;
-import com.cloud.sentinel.dashboard.client.SentinelApiClient;
 import com.cloud.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
 import com.cloud.sentinel.dashboard.datasource.entity.gateway.ApiPredicateItemEntity;
 import com.cloud.sentinel.dashboard.domain.Result;
@@ -27,7 +27,6 @@ import com.cloud.sentinel.dashboard.domain.vo.gateway.api.UpdateApiReqVo;
 import com.cloud.sentinel.dashboard.repository.gateway.InMemApiDefinitionStore;
 import com.cloud.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,32 +51,19 @@ public class GatewayApiController {
 
     @Autowired
     private InMemApiDefinitionStore repository;
-
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
-
     @Autowired
     @Qualifier("gatewayApiRuleApolloProvider")
     private DynamicRuleProvider<List<ApiDefinitionEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("gatewayApiRuleApolloPublisher")
     private DynamicRulePublisher<List<ApiDefinitionEntity>> rulePublisher;
 
     @GetMapping("/list.json")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
-    public Result<List<ApiDefinitionEntity>> queryApis(String app, String ip, Integer port) {
-
+    public Result<List<ApiDefinitionEntity>> queryApis(String app) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
-        if (StringUtil.isEmpty(ip)) {
-            return Result.ofFail(-1, "ip can't be null or empty");
-        }
-        if (port == null) {
-            return Result.ofFail(-1, "port can't be null");
-        }
-
         try {
             List<ApiDefinitionEntity> apis = ruleProvider.getRules(app);
             repository.saveAll(apis);

@@ -15,18 +15,16 @@
  */
 package com.cloud.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import com.cloud.sentinel.dashboard.auth.AuthAction;
 import com.cloud.sentinel.dashboard.auth.AuthService;
 import com.cloud.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.cloud.sentinel.dashboard.client.SentinelApiClient;
 import com.cloud.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
-import com.cloud.sentinel.dashboard.discovery.AppManagement;
 import com.cloud.sentinel.dashboard.domain.Result;
 import com.cloud.sentinel.dashboard.repository.rule.RuleRepository;
 import com.cloud.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,16 +44,10 @@ import java.util.concurrent.ExecutionException;
 public class ParamFlowRuleController {
 
     @Autowired
-    private SentinelApiClient sentinelApiClient;
-    @Autowired
-    private AppManagement appManagement;
-    @Autowired
     private RuleRepository<ParamFlowRuleEntity, Long> repository;
-
     @Autowired
     @Qualifier("paramFlowRuleApolloProvider")
     private DynamicRuleProvider<List<ParamFlowRuleEntity>> ruleProvider;
-
     @Autowired
     @Qualifier("paramFlowRuleApolloPublisher")
     private DynamicRulePublisher<List<ParamFlowRuleEntity>> rulePublisher;

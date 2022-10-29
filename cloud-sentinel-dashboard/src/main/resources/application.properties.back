@@ -30,9 +30,9 @@ sentinel.dashboard.version=1.8.1
 spring.profiles.active=dev
 
 # apollo config
-app.id=sentinel-dashboard
+app.id=sentinel-rules
 apollo.meta=http://139.196.208.53:8070
-apollo.token=e51497c4198c86de5f36b9e0e93b1ce488d79e31
+apollo.token=9864435af25910b34e1ab0875f20b57860cf640f
 apollo.user=zhoushuai
 apollo.clusterName=default
 apollo.namespaceName=development.sentinel-rules

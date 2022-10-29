@@ -1,16 +1,15 @@
 package com.cloud.sentinel.dashboard.rule.apollo.degrade;
 
-import com.cloud.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
-import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.cloud.sentinel.dashboard.rule.apollo.ApolloConfigUtil;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.fastjson.JSON;
+import com.cloud.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
+import com.cloud.sentinel.dashboard.rule.apollo.ApolloConfigUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -24,9 +23,8 @@ import java.util.List;
  * @create: 2020-07-21 16:40
  **/
 @Component("degradeRuleApolloPublisher")
+@Slf4j
 public class DegradeRuleApolloPublisher implements DynamicRulePublisher<List<DegradeRuleEntity>> {
-
-    private final Logger logger = LoggerFactory.getLogger(DegradeRuleApolloPublisher.class);
 
     @Autowired
     private ApolloOpenApiClient apolloOpenApiClient;
@@ -73,7 +71,7 @@ public class DegradeRuleApolloPublisher implements DynamicRulePublisher<List<Deg
         namespaceReleaseDTO.setReleaseTitle("Modify or add configurations");
         apolloOpenApiClient.publishNamespace(appId, env, clusterName, spaceName, namespaceReleaseDTO);
 
-        logger.info("set app : {} DegradeRule success rules: {}", app, JSON.toJSONString(rules));
+        log.info("set app : {} DegradeRule success rules: {}", app, JSON.toJSONString(rules));
     }
 
     /**

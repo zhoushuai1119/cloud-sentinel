@@ -15,17 +15,16 @@
  */
 package com.cloud.sentinel.dashboard.rule.apollo.flow;
 
-import com.cloud.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.cloud.sentinel.dashboard.rule.apollo.ApolloConfigUtil;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.fastjson.JSON;
+import com.cloud.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.cloud.sentinel.dashboard.rule.DynamicRulePublisher;
+import com.cloud.sentinel.dashboard.rule.apollo.ApolloConfigUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -37,9 +36,8 @@ import java.util.List;
  * @since 1.5.0
  */
 @Component("flowRuleApolloPublisher")
+@Slf4j
 public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
-
-    private final Logger logger = LoggerFactory.getLogger(FlowRuleApolloPublisher.class);
 
     @Autowired
     private ApolloOpenApiClient apolloOpenApiClient;
@@ -80,7 +78,7 @@ public class FlowRuleApolloPublisher implements DynamicRulePublisher<List<FlowRu
         namespaceReleaseDTO.setReleaseTitle("Modify or add configurations");
         apolloOpenApiClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
 
-        logger.info("set app : {} FlowRule success rules: {}", app, JSON.toJSONString(rules));
+        log.info("set app : {} FlowRule success rules: {}", app, JSON.toJSONString(rules));
     }
 
     /**
