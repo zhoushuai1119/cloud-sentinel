@@ -101,16 +101,14 @@ public class ApolloClusterConfigManager {
 //            clusterGroupEntity.setMachineId(ip);
 
             openItemDTO.setValue(JSON.toJSONString(groupList));
-            ApolloOpenApiClientHolder.getApolloOpenApiClient().createOrUpdateItem(sentinelAppId, projectEnv,
-                    clusterName, appName, openItemDTO);
+            apolloOpenApiClient.createOrUpdateItem(appId, env, clusterName, namespaceName, openItemDTO);
+
             // Release configuration
             NamespaceReleaseDTO namespaceReleaseDTO = new NamespaceReleaseDTO();
             namespaceReleaseDTO.setEmergencyPublish(true);
-            namespaceReleaseDTO.setReleasedBy(ApolloConfigUtil.getApolloMasterName());
+            namespaceReleaseDTO.setReleasedBy(user);
             namespaceReleaseDTO.setReleaseTitle("Modify Token Server Config ");
-            ApolloOpenApiClientHolder.getApolloOpenApiClient().publishNamespace(sentinelAppId, projectEnv,
-                    "default",
-                    appName, namespaceReleaseDTO);
+            apolloOpenApiClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
             log.info("Token Server 地址修改成功，appName:" + appName);
 
         } catch (Exception e) {
