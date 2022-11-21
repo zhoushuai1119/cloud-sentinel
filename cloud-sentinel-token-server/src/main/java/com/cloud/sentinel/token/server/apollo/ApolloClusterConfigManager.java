@@ -1,6 +1,7 @@
 package com.cloud.sentinel.token.server.apollo;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.cloud.sentinel.token.server.entity.ClusterGroupEntity;
 import com.cloud.sentinel.token.server.utils.ApolloConfigUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
@@ -8,6 +9,8 @@ import com.ctrip.framework.apollo.openapi.dto.NamespaceReleaseDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +26,20 @@ import java.util.Optional;
 @Component
 @Slf4j
 public class ApolloClusterConfigManager {
-    private static String projectEnv;
 
+    @Autowired
+    private ApolloOpenApiClient apolloOpenApiClient;
+
+    @Value("${app.id}")
+    private String appId;
     @Value("${spring.profiles.active}")
-    public void setProjectEnv(String env) {
-        projectEnv = env;
-    }
+    private String env;
+    @Value("${apollo.user}")
+    private String user;
+    @Value("${apollo.clusterName}")
+    private String clusterName;
+    @Value("${apollo.namespaceName}")
+    private String namespaceName;
 
     /**
      * 成为master的tokenServer修改不同规则namespace中的集群配置
@@ -36,24 +47,19 @@ public class ApolloClusterConfigManager {
      * @param ip
      * @param port
      */
-    public static void changeMasterTokenServerAddress(String ip, Integer port) {
-        ApolloOpenApiClient apolloOpenApiClient = ApolloOpenApiClientHolder.getApolloOpenApiClient();
+    public void changeMasterTokenServerAddress(String ip, Integer port) {
         //查询sentinel规则下所有的nameSpace
-        String sentinelAppId = ApolloConfigUtil.getSentinelAppId();
-        List<OpenNamespaceDTO> namespaceDTOList = apolloOpenApiClient.getNamespaces(sentinelAppId, projectEnv,
-                "default");
-        String tokenServerNameSpaceName = ApolloConfigUtil.getTokenServerNamespaceName();
+        List<OpenNamespaceDTO> namespaceDTOList = apolloOpenApiClient.getNamespaces(appId, env, clusterName);
 
         //查询token server nameSpace
-        OpenNamespaceDTO openNamespaceDTO = apolloOpenApiClient.getNamespace(sentinelAppId, projectEnv, "default",
-                tokenServerNameSpaceName);
+        OpenNamespaceDTO openNamespaceDTO = apolloOpenApiClient.getNamespace(appId, env, clusterName, namespaceName);
         List<OpenItemDTO> itemDTOList = openNamespaceDTO.getItems();
         if (itemDTOList == null || itemDTOList.isEmpty()) {
             return;
         }
         //找到配置了集群限流的item
         Optional<OpenItemDTO> clusterConfigItem =
-                itemDTOList.stream().filter(t -> ApolloConfigUtil.getTokenServerClusterMapDataId().equals(t.getKey())).findAny();
+                itemDTOList.stream().filter(t -> ApolloConfigUtil.getTokenServerRuleKey().equals(t.getKey())).findAny();
         if (!clusterConfigItem.isPresent()) {
             return;
         }
@@ -68,9 +74,8 @@ public class ApolloClusterConfigManager {
      * @param ip          tokenServer ip
      * @param port        tokenServer port
      */
-    private static void publishMasterTokenServerAddress(OpenItemDTO openItemDTO, String appName, String ip,
+    private void publishMasterTokenServerAddress(OpenItemDTO openItemDTO, String appName, String ip,
                                                         Integer port) {
-        String sentinelAppId = ApolloConfigUtil.getSentinelAppId();
         String value = openItemDTO.getValue();
         String clusterName = "default";
         if (StringUtils.isEmpty(value)) {
