@@ -21,6 +21,7 @@
         <cloud.sentinel.version>1.2.0</cloud.sentinel.version>
         <sentinel.version>1.8.1</sentinel.version>
         <commons-lang.version>2.6</commons-lang.version>
+        <curator.version>5.4.0</curator.version>
     </properties>
 
     <!--子模块工厂配置-->
@@ -40,6 +41,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- for Apollo rule publisher sample -->
+        <dependency>
+            <groupId>com.ctrip.framework.apollo</groupId>
+            <artifactId>apollo-openapi</artifactId>
+            <version>${cloud.apollo.version}</version>
         </dependency>
         <!-- apollo配置中心 -->
         <dependency>

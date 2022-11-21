@@ -33,6 +33,12 @@
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-datasource-apollo</artifactId>
         </dependency>
+        <!--zookeeper客户端api-->
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>${curator.version}</version>
+        </dependency>
         <!--hibernate-validator-->
         <dependency>
             <groupId>org.hibernate.validator</groupId>

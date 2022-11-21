@@ -18,6 +18,8 @@ package com.cloud.sentinel.token.server.entity;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Eric Zhao
@@ -29,6 +31,10 @@ public class ClusterGroupEntity implements Serializable {
     private static final long serialVersionUID = 3675679777255354873L;
 
     /**
+     * machineId
+     */
+    private String machineId;
+    /**
      * token server ip
      */
     private String ip;
@@ -36,6 +42,10 @@ public class ClusterGroupEntity implements Serializable {
      * token server port
      */
     private Integer port;
+    /**
+     * client list
+     */
+    private Set<String> clientSet = new HashSet<>();
     /**
      * 最大QPS
      */
