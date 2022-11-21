@@ -2,6 +2,8 @@ package com.cloud.sentinel.token.server.apollo;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.cloud.dingtalk.dinger.DingerSender;
+import com.cloud.dingtalk.dinger.core.entity.DingerRequest;
 import com.cloud.sentinel.token.server.entity.ClusterGroupEntity;
 import com.cloud.sentinel.token.server.utils.ApolloConfigUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
@@ -13,8 +15,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -29,6 +33,9 @@ public class ApolloClusterConfigManager {
 
     @Autowired
     private ApolloOpenApiClient apolloOpenApiClient;
+
+    @Autowired
+    private DingerSender dingerSender;
 
     @Value("${app.id}")
     private String appId;
@@ -48,57 +55,51 @@ public class ApolloClusterConfigManager {
      * @param port
      */
     public void changeMasterTokenServerAddress(String ip, Integer port) {
-        //查询sentinel规则下所有的nameSpace
-        List<OpenNamespaceDTO> namespaceDTOList = apolloOpenApiClient.getNamespaces(appId, env, clusterName);
-
         //查询token server nameSpace
         OpenNamespaceDTO openNamespaceDTO = apolloOpenApiClient.getNamespace(appId, env, clusterName, namespaceName);
         List<OpenItemDTO> itemDTOList = openNamespaceDTO.getItems();
-        if (itemDTOList == null || itemDTOList.isEmpty()) {
+        if (CollectionUtils.isEmpty(itemDTOList)) {
             return;
         }
         //找到配置了集群限流的item
         Optional<OpenItemDTO> clusterConfigItem =
-                itemDTOList.stream().filter(t -> ApolloConfigUtil.getTokenServerRuleKey().equals(t.getKey())).findAny();
+                itemDTOList.stream().filter(t -> ApolloConfigUtil.getTokenServerRuleKey().equals(t.getKey())).findFirst();
         if (!clusterConfigItem.isPresent()) {
             return;
         }
-        publishMasterTokenServerAddress(clusterConfigItem.get(), openNamespaceDTO.getNamespaceName(), ip, port);
+        publishMasterTokenServerAddress(clusterConfigItem.get(), ip, port);
     }
 
     /**
      * 将master TokenServer的配置写入不同规则namespace的集群配置中
      *
      * @param openItemDTO 集群规则所在的item
-     * @param appName     不同规则所在的namespace名字，即为appName
      * @param ip          tokenServer ip
      * @param port        tokenServer port
      */
-    private void publishMasterTokenServerAddress(OpenItemDTO openItemDTO, String appName, String ip,
-                                                        Integer port) {
+    private void publishMasterTokenServerAddress(OpenItemDTO openItemDTO, String ip, Integer port) {
         String value = openItemDTO.getValue();
-        String clusterName = "default";
         if (StringUtils.isEmpty(value)) {
             return;
         }
         try {
             List<ClusterGroupEntity> groupList = JSON.parseObject(value, new TypeReference<List<ClusterGroupEntity>>() {
+
             });
 
-            if (groupList == null || groupList.isEmpty()) {
+            if (CollectionUtils.isEmpty(groupList)) {
                 return;
             }
 
             ClusterGroupEntity clusterGroupEntity = groupList.get(0);
 
             //规则中的tokenServer地址与当前相等，不做处理
-            if (clusterGroupEntity.getIp().equals(ip) && clusterGroupEntity.getPort().equals(port)) {
+            if (Objects.equals(clusterGroupEntity.getIp(), ip) && Objects.equals(clusterGroupEntity.getPort(), port)) {
                 return;
             }
 
             clusterGroupEntity.setIp(ip);
             clusterGroupEntity.setPort(port);
-//            clusterGroupEntity.setMachineId(ip);
 
             openItemDTO.setValue(JSON.toJSONString(groupList));
             apolloOpenApiClient.createOrUpdateItem(appId, env, clusterName, namespaceName, openItemDTO);
@@ -106,14 +107,21 @@ public class ApolloClusterConfigManager {
             // Release configuration
             NamespaceReleaseDTO namespaceReleaseDTO = new NamespaceReleaseDTO();
             namespaceReleaseDTO.setEmergencyPublish(true);
+            namespaceReleaseDTO.setReleaseComment("Modify Token Server Config");
             namespaceReleaseDTO.setReleasedBy(user);
-            namespaceReleaseDTO.setReleaseTitle("Modify Token Server Config ");
+            namespaceReleaseDTO.setReleaseTitle("Modify Token Server Config");
             apolloOpenApiClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
-            log.info("Token Server 地址修改成功，appName:" + appName);
 
+            log.info("Token Server 地址修改成功，namespaceName:" + namespaceName);
+            // 发送text类型消息
+            dingerSender.send(
+                    DingerRequest.request("Token Server 地址修改成功，namespaceName:" + namespaceName)
+            );
         } catch (Exception e) {
-            e.printStackTrace();
-            log.info("Token Server 地址修改失败，appName:" + appName);
+            log.error("Token Server 地址修改失败，namespaceName:" + namespaceName);
+            dingerSender.send(
+                    DingerRequest.request("Token Server 地址修改失败，namespaceName:" + namespaceName)
+            );
         }
 
     }

@@ -39,6 +39,12 @@
             <artifactId>curator-recipes</artifactId>
             <version>${curator.version}</version>
         </dependency>
+        <!--dingtalk-->
+        <dependency>
+            <groupId>io.github.zhoushuai1119</groupId>
+            <artifactId>cloud-dingtalk-spring-boot-starter</artifactId>
+            <version>${cloud.dingtalk.version}</version>
+        </dependency>
         <!--hibernate-validator-->
         <dependency>
             <groupId>org.hibernate.validator</groupId>

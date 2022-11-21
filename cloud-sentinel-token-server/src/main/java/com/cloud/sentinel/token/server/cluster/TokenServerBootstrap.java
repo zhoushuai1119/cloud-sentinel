@@ -4,11 +4,17 @@ import com.alibaba.csp.sentinel.cluster.server.ClusterTokenServer;
 import com.alibaba.csp.sentinel.cluster.server.SentinelDefaultTokenServer;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
+import com.cloud.dingtalk.dinger.DingerSender;
+import com.cloud.dingtalk.dinger.core.entity.DingerRequest;
+import com.cloud.sentinel.token.server.apollo.ApolloClusterConfigManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.CloseableUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +31,12 @@ import java.util.concurrent.TimeUnit;
 @Component
 @Slf4j
 public class TokenServerBootstrap {
+
+    @Autowired
+    private ApolloClusterConfigManager apolloClusterConfigManager;
+
+    @Autowired
+    private DingerSender dingerSender;
 
     @Value("${zookeeper.address}")
     private String zkAddress;
@@ -63,7 +75,7 @@ public class TokenServerBootstrap {
                 try {
                     String currentIp = HostNameUtil.getIp();
                     log.info("[Leader定时检查]" + currentIp + ",当前是TokenServer Master,端口:" + tokenServerPort);
-                    ApolloClusterConfigManager.changeMasterTokenServerAddress(currentIp, tokenServerPort);
+                    apolloClusterConfigManager.changeMasterTokenServerAddress(currentIp, tokenServerPort);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -74,6 +86,15 @@ public class TokenServerBootstrap {
             CloseableUtils.closeQuietly(ZK_CLIENT);
             CloseableUtils.closeQuietly(TOKEN_SERVER_CLIENT);
         }));
+    }
+
+    private CuratorFramework buildZkClient() {
+        return CuratorFrameworkFactory.builder()
+                .connectString(zkAddress)
+                .sessionTimeoutMs(5000)
+                .connectionTimeoutMs(5000)
+                .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                .build();
     }
 
     class TokenServerClient implements Closeable {
@@ -89,13 +110,18 @@ public class TokenServerBootstrap {
                     String currentIp = HostNameUtil.getIp();
                     Integer tokenServerPort = ClusterServerConfigManager.getPort();
                     log.info("[Leader选举]" + currentIp + ",成为了TokenServer Master,端口:" + tokenServerPort);
-                    ApolloClusterConfigManager.changeMasterTokenServerAddress(currentIp, tokenServerPort);
-
+                    dingerSender.send(
+                            DingerRequest.request("[Leader选举]" + currentIp + ",成为了TokenServer Master,端口:" + tokenServerPort)
+                    );
+                    apolloClusterConfigManager.changeMasterTokenServerAddress(currentIp, tokenServerPort);
                 }
 
                 @Override
                 public void notLeader() {
                     log.info(name + "失去了master");
+                    dingerSender.send(
+                            DingerRequest.request(name + "失去了master")
+                    );
                 }
             });
         }
