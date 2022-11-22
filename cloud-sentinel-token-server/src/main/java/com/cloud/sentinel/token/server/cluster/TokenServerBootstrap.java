@@ -5,7 +5,6 @@ import com.alibaba.csp.sentinel.cluster.server.SentinelDefaultTokenServer;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.cloud.dingtalk.dinger.DingerSender;
-import com.cloud.dingtalk.dinger.core.entity.DingerRequest;
 import com.cloud.sentinel.token.server.apollo.ApolloClusterConfigManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
@@ -21,7 +20,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhoushuai
@@ -107,19 +108,15 @@ public class TokenServerBootstrap {
                 public void isLeader() {
                     String currentIp = HostNameUtil.getIp();
                     Integer tokenServerPort = ClusterServerConfigManager.getPort();
-                    log.info("[Leader选举]" + currentIp + ",成为了TokenServer Master,端口:" + tokenServerPort);
-                    dingerSender.send(
-                            DingerRequest.request("[Leader选举]" + currentIp + ",成为了TokenServer Master,端口:" + tokenServerPort)
-                    );
+                    log.info("Leader选举;【" + currentIp + "】成为了TokenServer Master,端口:" + tokenServerPort);
+                    dingerSender.send("Leader选举;【" + currentIp + "】成为了TokenServer Master,端口:" + tokenServerPort);
                     apolloClusterConfigManager.changeMasterTokenServerAddress(currentIp, tokenServerPort);
                 }
 
                 @Override
                 public void notLeader() {
-                    log.info(name + "失去了master");
-                    dingerSender.send(
-                            DingerRequest.request(name + "失去了master")
-                    );
+                    log.info("【" + name + "】失去了master");
+                    dingerSender.send("【" + name + "】失去了master");
                 }
             });
         }

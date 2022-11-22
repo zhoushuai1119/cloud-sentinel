@@ -3,7 +3,6 @@ package com.cloud.sentinel.token.server.apollo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.cloud.dingtalk.dinger.DingerSender;
-import com.cloud.dingtalk.dinger.core.entity.DingerRequest;
 import com.cloud.sentinel.token.server.entity.ClusterGroupEntity;
 import com.cloud.sentinel.token.server.utils.ApolloConfigUtil;
 import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
@@ -112,16 +111,12 @@ public class ApolloClusterConfigManager {
             namespaceReleaseDTO.setReleaseTitle("Modify Token Server Config");
             apolloOpenApiClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
 
-            log.info("Token Server 地址修改成功，namespaceName:" + namespaceName);
+            log.info("Token Server 地址修改成功，namespaceName:【" + namespaceName + "】");
             // 发送text类型消息
-            dingerSender.send(
-                    DingerRequest.request("Token Server 地址修改成功，namespaceName:" + namespaceName)
-            );
+            dingerSender.send("Token Server 地址修改成功，namespaceName:【" + namespaceName + "】");
         } catch (Exception e) {
-            log.error("Token Server 地址修改失败，namespaceName:" + namespaceName);
-            dingerSender.send(
-                    DingerRequest.request("Token Server 地址修改失败，namespaceName:" + namespaceName)
-            );
+            log.error("Token Server 地址修改失败，namespaceName:【" + namespaceName + "】");
+            dingerSender.send("Token Server 地址修改失败，namespaceName:【" + namespaceName + "】");
         }
 
     }
