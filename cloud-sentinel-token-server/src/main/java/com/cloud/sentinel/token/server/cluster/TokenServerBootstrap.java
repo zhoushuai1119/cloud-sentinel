@@ -73,7 +73,9 @@ public class TokenServerBootstrap {
             if (hasLeaderShip) {
                 try {
                     String currentIp = HostNameUtil.getIp();
-                    log.info("[Leader定时检查]" + currentIp + ",当前是TokenServer Master,端口:" + tokenServerPort);
+                    if (log.isDebugEnabled()) {
+                        log.debug("[Leader定时检查]" + currentIp + ",当前是TokenServer Master,端口:" + tokenServerPort);
+                    }
                     apolloClusterConfigManager.changeMasterTokenServerAddress(currentIp, tokenServerPort);
                 } catch (Exception e) {
                     e.printStackTrace();
