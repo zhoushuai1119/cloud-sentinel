@@ -3,13 +3,15 @@ package com.cloud.sentinel.token.server.parser;
 import com.alibaba.csp.sentinel.cluster.server.config.ClusterServerConfigManager;
 import com.alibaba.csp.sentinel.cluster.server.config.ServerFlowConfig;
 import com.alibaba.csp.sentinel.datasource.Converter;
-import com.cloud.sentinel.token.server.entity.ClusterGroupEntity;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.util.HostNameUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.cloud.sentinel.token.server.entity.ClusterGroupEntity;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @description:
@@ -34,13 +36,16 @@ public class ClusterServerFlowConfigParser implements Converter<String, ServerFl
 
     private ServerFlowConfig extractServerFlowConfig(List<ClusterGroupEntity> groupList) {
         if (CollectionUtils.isNotEmpty(groupList)) {
-            ClusterGroupEntity clusterGroup = groupList.get(0);
-            return new ServerFlowConfig()
-                    .setExceedCount(ClusterServerConfigManager.getExceedCount())
-                    .setIntervalMs(ClusterServerConfigManager.getIntervalMs())
-                    .setMaxAllowedQps(clusterGroup.getMaxAllowedQps())
-                    .setMaxOccupyRatio(ClusterServerConfigManager.getMaxOccupyRatio())
-                    .setSampleCount(ClusterServerConfigManager.getSampleCount());
+            for (ClusterGroupEntity group : groupList) {
+                if (Objects.equals(group.getIp(), HostNameUtil.getIp())) {
+                    return new ServerFlowConfig()
+                            .setExceedCount(ClusterServerConfigManager.getExceedCount())
+                            .setIntervalMs(ClusterServerConfigManager.getIntervalMs())
+                            .setMaxAllowedQps(group.getMaxAllowedQps())
+                            .setMaxOccupyRatio(ClusterServerConfigManager.getMaxOccupyRatio())
+                            .setSampleCount(ClusterServerConfigManager.getSampleCount());
+                }
+            }
         }
         return null;
     }
