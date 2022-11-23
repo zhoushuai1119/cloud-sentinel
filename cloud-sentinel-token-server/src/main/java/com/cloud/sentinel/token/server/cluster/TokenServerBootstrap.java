@@ -119,6 +119,7 @@ public class TokenServerBootstrap {
                     String currentIp = HostNameUtil.getIp();
                     Integer tokenServerPort = ClusterServerConfigManager.getPort();
                     log.info("Leader选举;【" + currentIp + "】成为了TokenServer Master,端口:" + tokenServerPort);
+                    //发送企业微信告警
                     dingerSender.send("Leader选举;【" + currentIp + "】成为了TokenServer Master,端口:" + tokenServerPort);
                     apolloClusterConfigManager.changeMasterTokenServerAddress(currentIp, tokenServerPort);
                 }
@@ -126,6 +127,7 @@ public class TokenServerBootstrap {
                 @Override
                 public void notLeader() {
                     log.info("【" + name + "】失去了master");
+                    //发送企业微信告警
                     dingerSender.send("【" + name + "】失去了master");
                 }
             });

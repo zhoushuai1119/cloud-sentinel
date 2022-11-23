@@ -112,10 +112,11 @@ public class ApolloClusterConfigManager {
             apolloOpenApiClient.publishNamespace(appId, env, clusterName, namespaceName, namespaceReleaseDTO);
 
             log.info("Token Server 地址修改成功，namespaceName:【" + namespaceName + "】");
-            // 发送text类型消息
+            //发送企业微信告警
             dingerSender.send("Token Server 地址修改成功，namespaceName:【" + namespaceName + "】");
         } catch (Exception e) {
             log.error("Token Server 地址修改失败，namespaceName:【" + namespaceName + "】");
+            //发送企业微信告警
             dingerSender.send("Token Server 地址修改失败，namespaceName:【" + namespaceName + "】");
         }
 
