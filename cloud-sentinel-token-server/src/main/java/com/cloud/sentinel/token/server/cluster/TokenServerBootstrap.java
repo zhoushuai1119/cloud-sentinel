@@ -40,7 +40,7 @@ public class TokenServerBootstrap {
     @Value("${zookeeper.address}")
     private String zkAddress;
 
-    private static final String LOCK_PATH = "/sentinel/tokenServer";
+    private static final String LOCK_PATH = "/tokenServer";
 
     private static CuratorFramework ZK_CLIENT;
 
@@ -69,6 +69,7 @@ public class TokenServerBootstrap {
 
         //每隔1分钟进行一次自检，防止master地址写apollo失败
         scheduledExecutorService.scheduleAtFixedRate(() -> {
+            //返回true说明当前实例是leader
             boolean hasLeaderShip = TOKEN_SERVER_CLIENT.getLeaderLatch().hasLeadership();
             if (hasLeaderShip) {
                 try {
@@ -83,6 +84,7 @@ public class TokenServerBootstrap {
             }
         }, 1000 * 30, 1000 * 60, TimeUnit.MILLISECONDS);
 
+        //当jvm关闭的时候，会执行系统中已经设置的所有通过方法addShutdownHook添加的钩子
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             CloseableUtils.closeQuietly(ZK_CLIENT);
             CloseableUtils.closeQuietly(TOKEN_SERVER_CLIENT);
@@ -91,10 +93,16 @@ public class TokenServerBootstrap {
 
     private CuratorFramework buildZkClient() {
         return CuratorFrameworkFactory.builder()
+                //服务器列表，格式host1:port1,host2:port2
                 .connectString(zkAddress)
+                //会话超时时间，单位毫秒
                 .sessionTimeoutMs(5000)
+                //连接创建超时时间，单位毫秒
                 .connectionTimeoutMs(5000)
+                //重试策略
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                //命名空间: 以此为根目录，在多个应用共用一个Zookeeper集群的场景下，这对于实现不同应用之间的相互隔离十分有意义
+                .namespace("sentinel")
                 .build();
     }
 
